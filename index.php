@@ -136,7 +136,7 @@ function load_page($page, $users, $config){
 		<br>
 		<footer class="footer">
 		<div class="container">
-			<span class="text-muted">Copyright &copy; </span>
+			<span class="text-muted">Copyright &copy; <?php echo date("Y")."&nbsp;". $config['author']; ?></span>
 		</div>
     </footer>
 	</body>
