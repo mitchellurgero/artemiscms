@@ -2,6 +2,7 @@
 
 $users = array(
 	"admin"		=> '$2y$10$clicLxJG/qOXhuBmdgJ7Y.ExvOv9yP.Fgc78hYR3HH2tzaw4VObBC', //Single quotes, not double - and use password_hash function to generate passwords.
+	                // ^ The password is "password", however the admin panel has not been created yet!
 	
 );
 
