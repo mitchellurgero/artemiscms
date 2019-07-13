@@ -18,6 +18,13 @@ JavaScript is also supported.
 - Lightweight (Can even be hosted on Raspberry Pi Zero's, free hosting, etc.)
 - Fancy URLS (Requires Apache Rewrite Module!)
 
+## Installing
+
+1. Clone or download this repository
+2. Put all files into your web root on your web server. This can be in a sub directory as well.
+3. Copy config.example.php to config.php (`cp config.example.php config.php`)
+4. Edit config.php to your liking.
+
 ## Theme Support
 
 Artemis supports basic Bootstrap 4 themes, a few have been included from [bootswatch](https://bootswatch.com/) however, you can make your own so long as it's a self-sustained single bootstrap.css file.
