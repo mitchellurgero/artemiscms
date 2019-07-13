@@ -98,6 +98,11 @@ function load_page($page, $users, $config){
 		<script src="<?php echo $config['location']."app/js/bootstrap.min.js"; ?>"></script>
 	<nav class="navbar navbar-expand-sm bg-<?php echo $config['style']; ?> navbar-<?php echo $config['navbar']; ?>">
 	<a class="navbar-brand" href="<?php echo $config['location']; ?>"><?php echo (!empty($config['logo']) ?  '<img src="'.$config['location'].'app/'.$config['logo'].'">' : $config['title']); ?></a>
+	
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+    	<span class="navbar-toggler-icon"></span>
+	</button>
+	<div class="collapse navbar-collapse" id="collapsibleNavbar">
 	<ul class="navbar-nav">
 		<?php
 		if(isset($config['menu'])){
@@ -127,6 +132,8 @@ function load_page($page, $users, $config){
 		?>
 		
 	</ul>
+	</div>
+	
 	</nav>
 	<br>
 		<div class="container">
