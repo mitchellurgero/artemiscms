@@ -143,7 +143,15 @@ function load_page($page, $users, $config){
 		<br>
 		<footer class="footer">
 		<div class="container">
-			<span class="text-muted">Copyright &copy; <?php echo date("Y")."&nbsp;". $config['author']; ?></span>
+			<div class="row">
+				<div class="col">
+					<span class="text-muted">Copyright &copy; <?php echo date("Y")."&nbsp;". $config['author']; ?></span>
+				</div>
+				<div class="col">
+					<p class="float-right">Powered by <a href="https://github.com/mitchellurgero/artemiscms" target="_blank">Artemis</a></p>
+				</div>
+			</div>
+			
 		</div>
     </footer>
 	</body>
