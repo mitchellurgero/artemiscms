@@ -31,6 +31,13 @@ function load_page($page, $users, $config){
 	$iniData = "";
 	$pageData = "";
 	if(file_exists($file)){
+		if(is_dir($file)){
+			$file = rtrim($file, '/');
+			if(file_exists($file."/index.md")){
+				//Allows for index files (for folders that are linked.)
+				$file = $file."/index.md";
+			}
+		}
 		$fileData = file_get_contents($file);
 		$c = 0;
 		foreach(preg_split("/((\r?\n)|(\r\n?))/", $fileData) as $line){
