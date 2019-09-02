@@ -34,7 +34,7 @@ if(isset($_POST['pageData'])){
 <html lang="em">
 	<head>
 		<meta charset="utf-8">
-		<title>Artimes Admin</title>
+		<title>Artemis Admin</title>
 		<link rel="stylesheet" href="../theme/materia.css">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <?php
