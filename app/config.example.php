@@ -7,6 +7,7 @@ $users = array(
 );
 
 $config = array(
+	"admin"	    => true, //Allow admin interface
 	"theme"		=> "materia", //Filename of theme CSS minus the .css part.
 	"style"		=> "primary", //primary, light, or dark for the navigation bar.
 	"navbar"	=> "dark", //dark or light for the navigation bar.
