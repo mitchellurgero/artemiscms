@@ -22,12 +22,41 @@ if(isset($_GET['logout'])){
 	header("Location: ./");
 	die();	
 }
-if(isset($_POST['pageData'])){
+if(isset($_POST['pageData']) && isset($_SESSION['username'])){
 	//we got page data, let's save it.
-	$filename = $folder.$_POST['filename'];
+	$filename = str_replace(array(".."),array(""), $_POST['filename']);
+	$filename = $folder.$filename;
 	$pageData = $_POST['pageData'];
-	
 	file_put_contents($filename, $pageData);
+}
+if(isset($_POST['newPage']) && isset($_SESSION['username'])){
+	$filename = str_replace(array(".."),array(""), $_POST['pageName']);
+	$filename = $folder.$filename;
+	$template = "---
+title = Page Title
+date  = September 3rd, 2019
+desc  = Page Description
+author = Page Author
+---
+";
+	$dirname = dirname($filename);
+	if(!file_exists($dirname)){
+		mkdir($dirname);
+	}
+	if(!file_exists($filename)){
+		file_put_contents($filename, $template);
+	}
+}
+
+if(isset($_POST['deletePage']) && isset($_SESSION['username'])){
+	$filename = str_replace(array(".."),array(""), $_POST['filename']);
+	if(!empty($filename)){
+		$filename = $folder.$filename;
+		if(file_exists($filename)){
+			unlink($filename);
+		}
+	}
+	
 }
 ?>
 <!DOCTYPE html>
@@ -110,12 +139,15 @@ if(!isset($_SESSION['username'])){
 				<div class="col-md-3">
 					<h3>Pages</h3>
 					<hr>
-					<a href="?newPage" class="btn btn-sm btn-success">New Page</a>
+					<form action="index.php" method="POST">
+						<input type="hidden" name="newPage" id="newPage" value="true">
+						<input type="text" name="pageName" id="pageName" placeholder="filename.md">
+						<button type="submit" class="btn btn-sm btn-success">New Page</button>
+					</form>
 					<br><br>
 					<ul>
 					<?php
 					//List pages available, and a link to create new ones if needed.
-					
 					$pages = rglob($folder."*.md");
 					foreach($pages as $page){
 						$p = str_replace(array($folder,".."),array("",""),$page);
@@ -125,11 +157,23 @@ if(!isset($_SESSION['username'])){
 					</ul>
 				</div>
 				<div class="col-md-9">
-					<h3>Editor</h3>
+					<div class="row">
+						<div class="col">
+							<h3>Editor</h3>
+						</div>
+						<div class="col">
+							<form class="form-inline" action="index.php" method="POST">
+								<input type="hidden" name="deletePage" id="deletePage" value="true">
+								<input type="hidden" name="filename" id="filename" value="<?php if(isset($_GET['editPage'])){ echo $_GET['editPage'];} ?>">
+								<button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this page?');">Delete File</button>
+							</form>
+						</div>
+					</div>
 					<hr>
 					<form action="index.php" method="POST">
 						<span><button type="submit" class="btn btn-sm btn-success">Save Page Data</button></span>
 						<span>&nbsp;&nbsp;&nbsp;Please make sure to use <a href="http://www.markitdown.net/markdown">markdown</a> to create and edit pages.</span>
+						
 					<?php
 					$pageData = "";
 					if(isset($_GET['editPage'])){
