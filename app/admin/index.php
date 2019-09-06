@@ -65,6 +65,8 @@ if(isset($_POST['deletePage']) && isset($_SESSION['username'])){
 		<meta charset="utf-8">
 		<title>Artemis Admin</title>
 		<link rel="stylesheet" href="../theme/materia.css">
+		<link rel="stylesheet" href="css/simplemde.min.css">
+		<script src="js/simplemde.min.js"></script>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <?php
 if(!isset($_SESSION['username'])){
@@ -192,6 +194,9 @@ if(!isset($_SESSION['username'])){
 				</div>
 			</div>
 		</div>
+		<script>
+			var simplemde = new SimpleMDE({ element: document.getElementById("pageData"), placeholder:"Select a file to edit first...", hideIcons:['preview','side-by-side', 'fullscreen'] });
+		</script>
 	</body>
 			<?php
 		} else {

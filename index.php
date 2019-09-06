@@ -159,7 +159,6 @@ function load_page($page, $users, $config){
 					<p class="float-right">Powered by <a href="https://github.com/mitchellurgero/artemiscms" target="_blank">Artemis</a></p>
 				</div>
 			</div>
-			
 		</div>
     </footer>
 	</body>
