@@ -32,11 +32,11 @@ if(isset($_POST['pageData']) && isset($_SESSION['username'])){
 if(isset($_POST['newPage']) && isset($_SESSION['username'])){
 	$filename = str_replace(array(".."),array(""), $_POST['pageName']);
 	$filename = $folder.$filename;
-	$template = "---
-title = Page Title
-date  = September 3rd, 2019
-desc  = Page Description
-author = Page Author
+        $template = "---
+title = \"Page Title\"
+date  = \"".date("F j, Y, g:i a")."\"
+desc  = \"Page Description\"
+author = \"".$config['author']."\"
 ---
 ";
 	$dirname = dirname($filename);
