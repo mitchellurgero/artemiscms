@@ -41,7 +41,7 @@ function load_page($page, $users, $config){
 		$fileData = file_get_contents($file);
 		$c = 0;
 		foreach(preg_split("/((\r?\n)|(\r\n?))/", $fileData) as $line){
-		    if($line == "---"){
+		    if($line == "---" && $c < 2){
 		    	$c++;
 		    	continue;
 		    }
