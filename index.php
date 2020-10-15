@@ -105,7 +105,7 @@ function load_page($page, $users, $config){
 		<script src="<?php echo $config['location']."app/js/jquery.min.js"; ?>"></script>
 		<script src="<?php echo $config['location']."app/js/bootstrap.min.js"; ?>"></script>
 	<nav class="navbar navbar-expand-sm bg-<?php echo $config['style']; ?> navbar-<?php echo $config['navbar']; ?>">
-	<a class="navbar-brand" href="<?php echo $config['location']; ?>"><?php echo (!empty($config['logo']) ?  '<img style="max-height:32px !important;" src="'.$config['location'].'app/'.$config['logo'].'">' : $config['title']); ?></a>
+	<a class="navbar-brand" href="<?php echo $config['location']; ?>"><?php echo (!empty($config['logo']) ?  '<img style="max-height:32px !important;" class="rounded" src="'.$config['location'].'app/'.$config['logo'].'">' : $config['title']); ?></a>
 	
 	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
     	<span class="navbar-toggler-icon"></span>
