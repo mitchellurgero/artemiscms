@@ -8,7 +8,19 @@ if(file_exists("$dir/app/config.php")){
 	require_once("$dir/app/config.example.php");
 }
 require_once("$dir/app/libs/md.php");
+require_once("$dir/app/plugins.php");
+//Composer stuff
+require_once("$dir/app/vendor/autoload.php");
+
+//Start grabbing classes :D
 $parsedown = new ParsedownExtra();
+$smarty = new Smarty();
+$smarty->setTemplateDir($config->sm_template['TemplateDir']);
+$smarty->setCompileDir($config->sm_template['CompileDir']);
+$smarty->setConfigDir($config->sm_template['ConfigDir']);
+$smarty->setCacheDir($config->sm_template['CacheDir']);
+$template = "page";
+
 //Start processing page
 $page = "";
 if(isset($_REQUEST['page'])){
@@ -16,153 +28,116 @@ if(isset($_REQUEST['page'])){
 } else {
 	$page = "home.md";
 }
+if(!endsWith($config->location,"/")){
+	$config->location = $config->location."/";
+}
+if(strpos($page, "..") !== false){
+	$page = str_replace("..",".", $page);
+}
 
-load_page($page, $users, $config);
+// Assign smarty vars before page load
+$smarty->assign("CONFIG", $config);
 
-function load_page($page, $users, $config){
-	$dir = __DIR__;
-	if(strpos($page, "..") !== false){
-		$page = str_replace("..",".", $page);
-	}
-	$file = $dir."/app/pages/".$page;
-	$fileData = "";
-	$fileFinal = "";
-	$ini = "";
-	$iniData = "";
-	$pageData = "";
-	if(file_exists($file)){
-		if(is_dir($file)){
-			$file = rtrim($file, '/');
-			if(file_exists($file."/index.md")){
-				//Allows for index files (for folders that are linked.)
-				$file = $file."/index.md";
+//Generate menu
+$navMenu = '';
+if(isset($config->menu)){
+	foreach($config->menu as $title=>$item){
+		if(is_array($item)){
+			$navMenu .= '<li class="nav-item dropdown">
+				  <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">'.$title.'</a>
+				  <div class="dropdown-menu">';
+			foreach($item as $titleSub=>$itemSub){
+				$navMenu .= '<a class="dropdown-item" href="'.$config->location.$itemSub.'">'.$titleSub.'</a>';
 			}
+			$navMenu .= '</div>
+				</li>';
+		} else {
+			$navMenu .= '<li class="nav-item">
+			<a class="nav-link" href="'.$config->location.$item.'">'.$title.'</a>
+		</li>';
 		}
-		$fileData = file_get_contents($file);
-		$c = 0;
-		foreach(preg_split("/((\r?\n)|(\r\n?))/", $fileData) as $line){
-		    if($line == "---" && $c < 2){
-		    	$c++;
-		    	continue;
-		    }
-		    if($c >= 2){
-		    	$fileFinal .= $line."\r\n";
-		    } else {
-		    	$ini .= $line."\r\n";
-		    }
-		    
-		}
-		$iniData = parse_ini_string($ini);
-		$pageData = Parsedown::instance()
-   		->setMarkupEscaped(false) # escapes markup (HTML)
-   		->text($fileFinal);
-	} else {
-		//file not found?????
-		$iniData = array("title" => "404 Page Not Found");
-		$pageData = '
-		<div class="container">
-			<br><br><br>
-			<div class="row">
-				<div class="col"><h3>The page you requested cannot be displayed at this time.</h3><p>Please contact the System Administrator for more details.</p></div>
-			</div>
-		</div>
-		';
 	}
-	$css = $config['location']."app/css/bootstrap.min.css";
-	if(!empty($config['theme'])){
-		$css = $config['location']."app/theme/".$config['theme'].".css";
-	}
-	?>
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title><?php echo (isset($iniData['title']) ?  $iniData['title'] : 'Title'); ?> | <?php echo $config['title'];?></title>
-		<meta name="description" content="<?php echo (isset($iniData['desc']) ?  $iniData['desc'] : 'Page Description'); ?>">
-		<meta name="author" content="<?php echo (isset($iniData['author']) ?  $iniData['author'] : 'Page Author'); ?>">
-		<link rel="stylesheet" href="<?php echo $css; ?>">
-		<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<style>
-			html {
-			  position: relative;
-			  min-height: 100%;
-			}
-			body {
-			  margin-bottom: 60px; /* Margin bottom by footer height */
-			}
-			.footer {
-			  position: absolute;
-			  bottom: 0;
-			  width: 100%;
-			  height: 60px; /* Set the fixed height of the footer here */
-			  line-height: 60px; /* Vertically center the text there */
-			  background-color: #f5f5f5;
-			}
-		</style>
-	</head>
-	<body>
-		<script src="<?php echo $config['location']."app/js/jquery.min.js"; ?>"></script>
-		<script src="<?php echo $config['location']."app/js/bootstrap.min.js"; ?>"></script>
-	<nav class="navbar navbar-expand-sm bg-<?php echo $config['style']; ?> navbar-<?php echo $config['navbar']; ?>">
-	<a class="navbar-brand" href="<?php echo $config['location']; ?>"><?php echo (!empty($config['logo']) ?  '<img style="max-height:32px !important;" class="rounded" src="'.$config['location'].'app/'.$config['logo'].'">' : $config['title']); ?></a>
+}
+$smarty->assign("MENU", $navMenu);
+
+//Page type processing
+$dir = __DIR__;
 	
-	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
-    	<span class="navbar-toggler-icon"></span>
-	</button>
-	<div class="collapse navbar-collapse" id="collapsibleNavbar">
-	<ul class="navbar-nav">
-		<?php
-		if(isset($config['menu'])){
-			foreach($config['menu'] as $title=>$item){
-				if(is_array($item)){
-					echo '<li class="nav-item dropdown">
-						  <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">'.$title.'</a>
-						  <div class="dropdown-menu">';
-					foreach($item as $titleSub=>$itemSub){
-						echo '';
-						?>
-						    <a class="dropdown-item" href="<?php echo $config['location'].$itemSub; ?>"><?php echo $titleSub; ?></a>
-						<?php
-					}
-					echo '</div>
-						</li>';
-				} else {
-					echo '';
-				?>
-				<li class="nav-item">
-					<a class="nav-link" href="<?php echo $config['location'].$item; ?>"><?php echo $title; ?></a>
-				</li>
-				<?php
-				}
-			}
+$file = $dir."/app/pages/".$page;
+$fileData = "";
+$fileFinal = "";
+$ini = "";
+$iniData = array();
+$pageData = "";
+$c = 0;
+
+if(file_exists($file)){
+	if(is_dir($file)){
+		$file = rtrim($file, '/');
+		if(file_exists($file."/index.md")){
+			//Allows for index files (for folders that are linked.)
+			$file = $file."/index.md";
 		}
-		?>
+		if(rtrim($page,"/") == "blog"){
+			//We are on blog
+			$iniData = array("title"=> "Blog Posts");
+			$template = "blog-list";
+		}
+	}
+	if($template === "blog-list"){
+		$posts = 
+		$fileData = <<<EOL
+		---
+		title = "Posts"
+		---
+		EOL;
+		$posts =  array_diff(scandir(__DIR__."/app/pages/blog/"), array('..', '.'));
 		
-	</ul>
+	} else {
+		$fileData = file_get_contents($file);
+	}
+
+	foreach(preg_split("/((\r?\n)|(\r\n?))/", $fileData) as $line){
+		if($line == "---" && $c < 2){
+			$c++;
+			continue;
+		}
+		if($c >= 2){
+			$fileFinal .= $line."\r\n";
+		} else {
+			$ini .= $line."\r\n";
+		}
+	}
+	$iniData = parse_ini_string($ini);
+	$pageData = Parsedown::instance()
+	   ->setMarkupEscaped(false)
+	   ->text($fileFinal);
+} else {
+	//file not found?????
+	$iniData = array("title" => "404 Page Not Found");
+	$pageData = '
+	<div class="container">
+		<br><br><br>
+		<div class="row">
+			<div class="col"><h3>The page you requested cannot be displayed at this time.</h3><p>Please contact the System Administrator for more details.</p></div>
+		</div>
 	</div>
-	
-	</nav>
-	<br>
-		<div class="container">
-			<?php echo $pageData; ?>
-			
-		</div>
-		<br>
-		<footer class="footer">
-		<div class="container">
-			<div class="row">
-				<div class="col">
-					<span class="text-muted">Copyright &copy; <?php echo date("Y")."&nbsp;". $config['author']; ?></span>
-				</div>
-				<div class="col">
-					<p class="float-right">Powered by <a href="https://github.com/mitchellurgero/artemiscms" target="_blank">Artemis</a></p>
-				</div>
-			</div>
-		</div>
-    </footer>
-	</body>
-</html>
-	<?php
-	
+	';
+}
+
+$smarty->assign("PAGEDATA", $pageData);
+$smarty->assign("TITLE", (isset($iniData['title']) ?  $iniData['title'] : $config->title));
+$smarty->assign("DESC", (isset($iniData['desc']) ?  $iniData['desc'] : 'Page Description'));
+$smarty->assign("AUTHOR", (isset($iniData['author']) ?  $iniData['author'] : 'Page Author'));
+$smarty->assign("LOGO", (!empty($config->logo) ?  '<img style="max-height:32px !important;" class="rounded" src="'.$config->location.'app/'.$config->logo.'">' : $config->title));
+$smarty->assign("COPYRIGHT", date("Y")."&nbsp;". $config->author);
+$smarty->display("$template.tpl");
+$smarty->assign("INI", $iniData);
+
+
+function endswith($string, $test) {
+    $strlen = strlen($string);
+    $testlen = strlen($test);
+    if ($testlen > $strlen) return false;
+    return substr_compare($string, $test, $strlen - $testlen, $testlen) === 0;
 }

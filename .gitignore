@@ -1,2 +1,4 @@
 app/config.php
 app/pages/home.md
+app/t_compile/
+app/vendor/
