@@ -24,7 +24,7 @@ JavaScript is also supported.
 2. Put all files into your web root on your web server. This can be in a sub directory as well.
 3. Copy config.example.php to config.php (`cp config.example.php config.php`)
 4. Edit config.php to your liking.
-5. run `composer install`
+5. run `cd app && composer install`
 
 ## Theme Support
 
