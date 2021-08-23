@@ -94,7 +94,42 @@ if(file_exists($file)){
 		$posts =  array_diff(scandir(__DIR__."/app/pages/blog/"), array('..', '.'));
 		
 	} else {
-		$fileData = file_get_contents($file);
+		//Check file is text or markdown
+		$fInfo = pathinfo($file);
+		if(in_array($fInfo['extension'], array("md", "txt", "htm", "html"))){
+			// Confirm Mime type?
+			$mime = mime_content_type($file);
+			if(in_array($mime, array("text/plain", "text/html", "text/markdown"))){
+				$fileData = file_get_contents($file);
+			} else {
+				$fileData = '
+---
+title = "403 Access Denied"
+---
+
+<div class="container">
+	<br><br><br>
+	<div class="row">
+		<div class="col"><h3>You do not have access to this resource.</h3><p>Please contact the System Administrator for more details.</p></div>
+	</div>
+</div>
+				';
+			}
+			
+		} else {
+			$fileData = '
+---
+title = "403 Access Denied"
+---
+
+<div class="container">
+	<br><br><br>
+	<div class="row">
+		<div class="col"><h3>You do not have access to this resource.</h3><p>Please contact the System Administrator for more details.</p></div>
+	</div>
+</div>
+';
+		}
 	}
 
 	foreach(preg_split("/((\r?\n)|(\r\n?))/", $fileData) as $line){
