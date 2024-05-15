@@ -7,7 +7,6 @@ if(file_exists("$dir/app/config.php")){
 } else {
 	require_once("$dir/app/config.example.php");
 }
-require_once("$dir/app/libs/md.php");
 require_once("$dir/app/plugins.php");
 //Composer stuff
 require_once("$dir/app/vendor/autoload.php");
