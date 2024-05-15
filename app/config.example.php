@@ -3,7 +3,7 @@ define('SMARTY_RESOURCE_CHAR_SET', 'UTF-8');
 $config  = new stdClass();
 
 // Full URL to the hosted site.
-$config->location = "http://localhost"; 
+$config->location = "http://localhost";
 
 // Basic Site Information
 $config->title = 'Artemis CMS';
