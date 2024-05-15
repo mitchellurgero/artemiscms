@@ -2,14 +2,6 @@
 define('SMARTY_RESOURCE_CHAR_SET', 'UTF-8');
 $config  = new stdClass();
 
-// Users for the janky admin portal
-$users = array(
-	"admin"		=> '$2y$10$clicLxJG/qOXhuBmdgJ7Y.ExvOv9yP.Fgc78hYR3HH2tzaw4VObBC', //Single quotes, not double - and use password_hash function to generate passwords.
-	                // ^ The password is "password", however the admin panel has not been created yet!
-);
-// Admin Portal disabled by default
-$config->admin = false;
-
 // Full URL to the hosted site.
 $config->location = "http://localhost"; 
 
