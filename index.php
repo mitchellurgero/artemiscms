@@ -160,7 +160,7 @@ title = "403 Access Denied"
 }
 
 $smarty->assign("PAGEDATA", $pageData);
-$smarty->assign("TITLE", (isset($iniData['title']) ?  $iniData['title'] : $config->title));
+$smarty->assign("TITLE", (isset($iniData['title']) ?  $config->title." | ".$iniData['title'] : $config->title));
 $smarty->assign("DESC", (isset($iniData['desc']) ?  $iniData['desc'] : 'Page Description'));
 $smarty->assign("AUTHOR", (isset($iniData['author']) ?  $iniData['author'] : 'Page Author'));
 $smarty->assign("LOGO", (!empty($config->logo) ?  '<img style="max-height:32px !important;" class="rounded" src="'.$config->location.'app/'.$config->logo.'">' : $config->title));
