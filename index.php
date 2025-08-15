@@ -1,0 +1,228 @@
+<?php
+// Security: Set secure session configuration
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_secure', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
+ini_set('session.use_strict_mode', 1);
+session_start();
+
+// Security: Add security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('X-XSS-Protection: 1; mode=block');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+
+//Include libs and config:
+$dir = __DIR__;
+if(file_exists("$dir/app/config.php")){
+	require_once("$dir/app/config.php");
+} else {
+	require_once("$dir/app/config.example.php");
+}
+require_once("$dir/app/plugins.php");
+//Composer stuff
+require_once("$dir/app/vendor/autoload.php");
+
+//Start grabbing classes :D
+$parsedown = new ParsedownExtra();
+$smarty = new Smarty();
+$smarty->setTemplateDir($config->sm_template['TemplateDir']);
+$smarty->setCompileDir($config->sm_template['CompileDir']);
+$smarty->setConfigDir($config->sm_template['ConfigDir']);
+$smarty->setCacheDir($config->sm_template['CacheDir']);
+$template = "page";
+
+//Start processing page
+$page = "";
+if(isset($_REQUEST['page'])){
+	$page = $_REQUEST['page'];
+} else {
+	$page = "home.md";
+}
+if(!endsWith($config->location,"/")){
+	$config->location = $config->location."/";
+}
+
+// Security: Proper path traversal protection
+function sanitizePage($page) {
+    $page = str_replace("\0", "", $page);
+    $page = str_replace(array("../", "..\\", "..", "/.", "\\."), "", $page);
+    $page = preg_replace('/[^a-zA-Z0-9\-_\/\.]/', '', $page);
+    $page = ltrim($page, '/\\');
+    if (empty($page)) {
+        $page = "home.md";
+    }
+    
+    return $page;
+}
+
+$page = sanitizePage($page);
+
+// Assign smarty vars before page load
+$smarty->assign("CONFIG", $config);
+
+//Generate menu
+$navMenu = '';
+if(isset($config->menu)){
+	foreach($config->menu as $title=>$item){
+		if(is_array($item)){
+			$navMenu .= '<li class="nav-item dropdown">
+				  <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">'.$title.'</a>
+				  <div class="dropdown-menu">';
+			foreach($item as $titleSub=>$itemSub){
+				$navMenu .= '<a class="dropdown-item" href="'.$config->location.$itemSub.'">'.$titleSub.'</a>';
+			}
+			$navMenu .= '</div>
+				</li>';
+		} else {
+			$navMenu .= '<li class="nav-item">
+			<a class="nav-link" href="'.$config->location.$item.'">'.$title.'</a>
+		</li>';
+		}
+	}
+}
+$smarty->assign("MENU", $navMenu);
+
+//Page type processing
+$dir = __DIR__;
+	
+$file = $dir."/app/pages/".$page;
+
+$pagesDir = realpath($dir."/app/pages/");
+$requestedFile = realpath($file);
+
+// If realpath returns false (file doesn't exist), use the constructed path for existence check
+if ($requestedFile === false) {
+    $requestedFile = $file;
+}
+
+if ($requestedFile !== false && strpos($requestedFile, $pagesDir) !== 0) {
+    $file = $dir."/app/pages/home.md";
+}
+
+$fileData = "";
+$fileFinal = "";
+$ini = "";
+$iniData = array();
+$pageData = "";
+$c = 0;
+
+if(file_exists($file)){
+	if(is_dir($file)){
+		$file = rtrim($file, '/');
+		if(file_exists($file."/index.md")){
+			//Allows for index files (for folders that are linked.)
+			$file = $file."/index.md";
+		}
+		if(rtrim($page,"/") == "blog"){
+			//We are on blog
+			$iniData = array("title"=> "Blog Posts");
+			$template = "blog-list";
+		}
+	}
+	if($template === "blog-list"){
+		$posts = 
+		$fileData = <<<EOL
+		---
+		title = "Posts"
+		---
+		EOL;
+		$posts =  array_diff(scandir(__DIR__."/app/pages/blog/"), array('..', '.'));
+		
+	} else {
+		//Check file is text or markdown
+		$fInfo = pathinfo($file);
+		if(in_array($fInfo['extension'], array("md", "txt", "htm", "html"))){
+			// Confirm Mime type?
+			$mime = mime_content_type($file);
+			if(in_array($mime, array("text/plain", "text/html", "text/markdown"))){
+				$fileData = file_get_contents($file);
+			} else {
+				$fileData = '
+---
+title = "403 Access Denied"
+---
+
+<div class="container">
+	<br><br><br>
+	<div class="row">
+		<div class="col"><h3>You do not have access to this resource.</h3><p>Please contact the System Administrator for more details.</p></div>
+	</div>
+</div>
+				';
+			}
+			
+		} else {
+			$fileData = '
+---
+title = "403 Access Denied"
+---
+
+<div class="container">
+	<br><br><br>
+	<div class="row">
+		<div class="col"><h3>You do not have access to this resource.</h3><p>Please contact the System Administrator for more details.</p></div>
+	</div>
+</div>
+';
+		}
+	}
+
+	foreach(preg_split("/((\r?\n)|(\r\n?))/", $fileData) as $line){
+		if($line == "---" && $c < 2){
+			$c++;
+			continue;
+		}
+		if($c >= 2){
+			$fileFinal .= $line."\r\n";
+		} else {
+			$ini .= $line."\r\n";
+		}
+	}
+
+	$iniData = array();
+	if (!empty($ini)) {
+		$parsedIni = parse_ini_string($ini);
+		if ($parsedIni !== false) {
+
+			foreach ($parsedIni as $key => $value) {
+				$key = preg_replace('/[^a-zA-Z0-9_]/', '', $key);
+				if (is_string($value)) {
+					$value = strip_tags($value);
+				}
+				$iniData[$key] = $value;
+			}
+		}
+	}
+	
+	$pageData = Parsedown::instance()
+	   ->setMarkupEscaped(true)
+	   ->text($fileFinal);
+} else {
+	//file not found?????
+	$iniData = array("title" => "404 Page Not Found");
+	$pageData = '
+	<div class="container">
+		<br><br><br>
+		<div class="row">
+			<div class="col"><h3>The page you requested cannot be displayed at this time.</h3><p>Please contact the System Administrator for more details.</p></div>
+		</div>
+	</div>
+	';
+}
+
+$smarty->assign("PAGEDATA", $pageData);
+$smarty->assign("TITLE", (isset($iniData['title']) ?  $config->title." | ".$iniData['title'] : $config->title));
+$smarty->assign("DESC", (isset($iniData['desc']) ?  $iniData['desc'] : 'Page Description'));
+$smarty->assign("AUTHOR", (isset($iniData['author']) ?  $iniData['author'] : 'Page Author'));
+$smarty->assign("LOGO", (!empty($config->logo) ?  '<img style="max-height:32px !important;" class="rounded" src="'.$config->location.'app/'.$config->logo.'">' : $config->title));
+$smarty->assign("COPYRIGHT", date("Y")."&nbsp;". $config->author);
+$smarty->display("$template.tpl");
+$smarty->assign("INI", $iniData);
+
+
+function endswith($string, $test) {
+    $strlen = strlen($string);
+    $testlen = strlen($test);
+    if ($testlen > $strlen) return false;
+    return substr_compare($string, $test, $strlen - $testlen, $testlen) === 0;
+}

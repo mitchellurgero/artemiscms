@@ -1,0 +1,9 @@
+app/config.php
+app/pages/home.md
+app/t_compile/
+app/vendor/
+app/t_cache/
+app/t_configs/
+*.log
+.DS_Store
+Thumbs.db
